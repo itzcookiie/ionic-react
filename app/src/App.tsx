@@ -38,7 +38,7 @@ import './theme/variables.css';
 setupIonicReact();
 
 interface Todo {
-    id: number;
+    id: string;
     todo: string;
     completed: boolean;
 }
@@ -48,7 +48,7 @@ const App: React.FC = () => {
     const [todos, setTodos] = useState<Todo[]>([]);
     const [todo, setTodo] = useState<string>('');
 
-    // useEffect(() => console.log(todo), [todo]);
+    useEffect(() => console.log(todos), [todos]);
 
     const handleInput = (e: FormEvent) => {
         const element = e.target as HTMLInputElement;
@@ -59,9 +59,22 @@ const App: React.FC = () => {
         setTodos((state: Todo[]): Todo[] => {
             return [
                 ...state,
-                {id: state.length, todo, completed: false}
-            ]
-        })
+                {id: crypto.randomUUID(), todo, completed: false}
+            ];
+        });
+    };
+
+    const completeTodo = (currentTodoId: string) => {
+        setTodos((state: Todo[]): Todo[] => {
+            return state.map(oldTodo => {
+                if(oldTodo.id === currentTodoId) oldTodo.completed = true;
+                return oldTodo;
+            });
+        });
+    };
+
+    const deleteTodo = (currentTodoId: string) => {
+        setTodos(todos.filter(oldTodo => oldTodo.id !== currentTodoId));
     };
 
     return (
@@ -80,7 +93,7 @@ const App: React.FC = () => {
                             <IonInput onInput={handleInput}></IonInput>
                         </IonCol>
                         <IonCol size="auto">
-                            <IonButton onClick={addTodo}>+</IonButton>
+                            <IonButton disabled={!todo} onClick={addTodo}>+</IonButton>
                         </IonCol>
                     </IonRow>
                 </IonGrid>
@@ -88,9 +101,9 @@ const App: React.FC = () => {
             <IonList>
                 {todos.map(singleTodo => (
                     <IonItem key={singleTodo.id}>
-                        <IonLabel key={singleTodo.id}>{singleTodo.todo}</IonLabel>
-                        <IonIcon icon={checkmarkOutline} color="success" />
-                        <IonIcon icon={closeCircleOutline} color="danger" />
+                        <IonLabel style={{'textDecoration': singleTodo.completed ? 'line-through' : 'none'}} key={singleTodo.id}>{singleTodo.todo}</IonLabel>
+                        <IonIcon onClick={() => completeTodo(singleTodo.id)} icon={checkmarkOutline} color="success" />
+                        <IonIcon onClick={() => deleteTodo(singleTodo.id)} icon={closeCircleOutline} color="danger" />
                     </IonItem>
                 ))}
             </IonList>
